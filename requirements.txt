@@ -1,2 +1,5 @@
 maxapi
-exchangelib
+exchangelib>=4.0.0
+requests
+cryptography
+lxml
