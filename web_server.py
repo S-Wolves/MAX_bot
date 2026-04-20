@@ -1,4 +1,3 @@
-# web_server.py — ЕДИНЫЙ ФАЙЛ ДЛЯ RENDER
 import os
 import re
 import logging
@@ -8,9 +7,10 @@ from exchangelib import Account, Credentials, Message, Mailbox, Configuration
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ========== НАСТРОЙКИ ==========
-YOUR_EMAIL = "s.volkov@caterinburg.ru"
-YOUR_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+# ========== КОНФИГУРАЦИЯ ==========
+MAIL_LOGIN = os.getenv("MAIL_LOGIN", "s.volkov@caterinburg.ru")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+MAIL_TO = "bp@pfur.ru"
 
 SIGNATURE = """--
 С уважением,
@@ -23,6 +23,18 @@ SIGNATURE = """--
 www.caterinburg.ru
 https://vk.com/caterinburg"""
 
+MAPS = {
+    "mm6": "https://i.ibb.co/0Rckvcvf/6.png",
+    "mm10k2": "https://i.ibb.co/Zz0PP6fY/10-2.png",
+    "ordzhonikidze": "https://i.ibb.co/nMsbqc0X/image.png",
+}
+
+CONTACTS = {
+    "mm6": "👥 Контакты склада (Миклухо-Маклая, д.6):\n• Кладовщик Наталья: +79256050358\n• Грузчик Сергей: +79269552848",
+    "mm10k2": "👥 Контакты склада (Миклухо-Маклая, д.10к2):\n• Администратор Илаха: +79778320200\n• Зав. производства Анна: +79663171768",
+    "ordzhonikidze": "👥 Контакты склада (Орджоникидзе, д.3):\n• Администратор Екатерина: +79171253314",
+}
+
 def send_email(car_number: str, point_key: str):
     point_addresses = {
         "mm6": "Миклухо-Маклая, д.6",
@@ -30,24 +42,24 @@ def send_email(car_number: str, point_key: str):
         "ordzhonikidze": "Орджоникидзе, д.3",
     }
     address = point_addresses.get(point_key, "Неизвестная точка")
-    credentials = Credentials(username=YOUR_EMAIL, password=YOUR_PASSWORD)
+    credentials = Credentials(username=MAIL_LOGIN, password=MAIL_PASSWORD)
     try:
-        account = Account(primary_smtp_address=YOUR_EMAIL, credentials=credentials, autodiscover=True, access_type='delegate')
+        account = Account(primary_smtp_address=MAIL_LOGIN, credentials=credentials, autodiscover=True, access_type='delegate')
     except Exception:
         config = Configuration(server='owa.ekdekb.ru', credentials=credentials)
-        account = Account(primary_smtp_address=YOUR_EMAIL, config=config, autodiscover=False, access_type='delegate')
+        account = Account(primary_smtp_address=MAIL_LOGIN, config=config, autodiscover=False, access_type='delegate')
     
     body = f"Прошу пропустить машину для разгрузки на {address}.\n{car_number}\nЗаранее спасибо.\n\n{SIGNATURE}"
     msg = Message(
         account=account,
         subject=f'Заявка на пропуск {car_number}',
         body=body,
-        to_recipients=[Mailbox(email_address='bp@pfur.ru')]
+        to_recipients=[Mailbox(email_address=MAIL_TO)]
     )
     msg.send()
     logger.info(f"Письмо отправлено для {car_number}")
 
-# ========== HTML-страница (встроенная) ==========
+# ========== HTML-СТРАНИЦА ==========
 HTML_PAGE = """<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -114,13 +126,29 @@ HTML_PAGE = """<!DOCTYPE html>
         .status.success { background: #d4edda; color: #155724; }
         .status.error { background: #f8d7da; color: #721c24; }
         .status.loading { background: #e2f0ff; color: #004085; }
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        .result img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .contacts {
+            font-size: 14px;
+            line-height: 1.5;
+        }
         hr { margin: 20px 0; border: none; border-top: 1px solid #ddd; }
         .footer { font-size: 12px; color: #999; text-align: center; margin-top: 24px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🚚 Кейтеринбург</h1>
+    <h1>🚚 РУДН</h1>
     <div class="subtitle">Оформление пропуска для въезда</div>
     <div class="points">
         <button class="point-btn" data-point="mm6" data-name="Миклухо-Маклая, д.6">
@@ -140,16 +168,22 @@ HTML_PAGE = """<!DOCTYPE html>
     </div>
     <button class="submit" id="submitBtn">Оформить пропуск</button>
     <div id="status" class="status" style="display: none;"></div>
+    <div id="result" class="result" style="display: none;">
+        <div id="resultMap"></div>
+        <div id="resultContacts" class="contacts"></div>
+    </div>
     <hr>
-    <div class="footer">Пропуск действует 24 часа<br>После оформления схема проезда и контакты придут в чат</div>
+    <div class="footer">Пропуск действует 24 часа</div>
 </div>
 <script>
     const pointBtns = document.querySelectorAll('.point-btn');
     const plateInput = document.getElementById('plate');
     const submitBtn = document.getElementById('submitBtn');
     const statusDiv = document.getElementById('status');
+    const resultDiv = document.getElementById('result');
+    const resultMapDiv = document.getElementById('resultMap');
+    const resultContactsDiv = document.getElementById('resultContacts');
     let selectedPoint = null;
-    let selectedPointName = null;
 
     plateInput.addEventListener('input', function(e) { this.value = this.value.toUpperCase(); });
     pointBtns.forEach(btn => {
@@ -157,7 +191,10 @@ HTML_PAGE = """<!DOCTYPE html>
             pointBtns.forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             selectedPoint = btn.dataset.point;
-            selectedPointName = btn.dataset.name;
+            // Скрываем предыдущий результат при новом выборе
+            resultDiv.style.display = 'none';
+            resultMapDiv.innerHTML = '';
+            resultContactsDiv.innerHTML = '';
         });
     });
     submitBtn.addEventListener('click', async () => {
@@ -166,6 +203,7 @@ HTML_PAGE = """<!DOCTYPE html>
         if (!plate) { showStatus('Введите номер автомобиля', 'error'); return; }
         const plateRegex = /^[АВЕКМНОРСТУХ]\\d{3}[АВЕКМНОРСТУХ]{2,3}\\d{2,3}$/i;
         if (!plateRegex.test(plate)) { showStatus('Неверный формат номера. Пример: А123ВС777', 'error'); return; }
+        
         submitBtn.disabled = true;
         showStatus('Отправка...', 'loading');
         try {
@@ -177,8 +215,18 @@ HTML_PAGE = """<!DOCTYPE html>
             const result = await response.json();
             if (response.ok) {
                 showStatus('✅ Заявка отправлена! Пропуск на 24 часа.', 'success');
+                // Показываем карту и контакты
+                if (result.map_url) {
+                    resultMapDiv.innerHTML = `<img src="${result.map_url}" alt="Схема проезда">`;
+                }
+                if (result.contacts) {
+                    resultContactsDiv.innerHTML = result.contacts.replace(/\\n/g, '<br>');
+                }
+                resultDiv.style.display = 'block';
+                // Очищаем форму
                 pointBtns.forEach(b => b.classList.remove('selected'));
                 selectedPoint = null;
+                plateInput.value = '';
             } else {
                 showStatus(result.error || 'Ошибка', 'error');
             }
@@ -198,7 +246,6 @@ HTML_PAGE = """<!DOCTYPE html>
 </body>
 </html>"""
 
-# ========== ОБРАБОТЧИКИ ВЕБ-СЕРВЕРА ==========
 async def handle_index(request):
     return web.Response(text=HTML_PAGE, content_type='text/html')
 
@@ -209,11 +256,21 @@ async def handle_request_pass(request):
         point_key = data.get('point_key')
         if not car_number or not point_key:
             return web.json_response({'error': 'Не все данные'}, status=400)
+        
         pattern = r"^[АВЕКМНОРСТУХ]\d{3}[АВЕКМНОРСТУХ]{2,3}\d{2,3}$"
         if not re.match(pattern, car_number):
             return web.json_response({'error': 'Неверный формат номера'}, status=400)
+        
         send_email(car_number, point_key)
-        return web.json_response({'status': 'ok'})
+        
+        map_url = MAPS.get(point_key, "")
+        contacts = CONTACTS.get(point_key, "Контакты не найдены")
+        
+        return web.json_response({
+            'status': 'ok',
+            'map_url': map_url,
+            'contacts': contacts
+        })
     except Exception as e:
         logger.error(f"Ошибка: {e}")
         return web.json_response({'error': str(e)}, status=500)
