@@ -8,8 +8,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ========== КОНФИГУРАЦИЯ ==========
-MAIL_LOGIN = os.getenv("MAIL_LOGIN", "s.volkov@caterinburg.ru")
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+MAIL_LOGIN = "s.volkov@caterinburg.ru"
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "Vo2024sE0810")
 MAIL_TO = "bp@pfur.ru"
 
 SIGNATURE = """--
@@ -59,7 +59,7 @@ def send_email(car_number: str, point_key: str):
     msg.send()
     logger.info(f"Письмо отправлено для {car_number}")
 
-# ========== HTML-СТРАНИЦА ==========
+# ========== HTML (полная версия) ==========
 HTML_PAGE = """<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -148,7 +148,7 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="container">
-    <h1>🚚 РУДН</h1>
+    <h1>🚚 Кейтеринбург</h1>
     <div class="subtitle">Оформление пропуска для въезда</div>
     <div class="points">
         <button class="point-btn" data-point="mm6" data-name="Миклухо-Маклая, д.6">
@@ -191,7 +191,6 @@ HTML_PAGE = """<!DOCTYPE html>
             pointBtns.forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             selectedPoint = btn.dataset.point;
-            // Скрываем предыдущий результат при новом выборе
             resultDiv.style.display = 'none';
             resultMapDiv.innerHTML = '';
             resultContactsDiv.innerHTML = '';
@@ -215,7 +214,6 @@ HTML_PAGE = """<!DOCTYPE html>
             const result = await response.json();
             if (response.ok) {
                 showStatus('✅ Заявка отправлена! Пропуск на 24 часа.', 'success');
-                // Показываем карту и контакты
                 if (result.map_url) {
                     resultMapDiv.innerHTML = `<img src="${result.map_url}" alt="Схема проезда">`;
                 }
@@ -223,7 +221,6 @@ HTML_PAGE = """<!DOCTYPE html>
                     resultContactsDiv.innerHTML = result.contacts.replace(/\\n/g, '<br>');
                 }
                 resultDiv.style.display = 'block';
-                // Очищаем форму
                 pointBtns.forEach(b => b.classList.remove('selected'));
                 selectedPoint = null;
                 plateInput.value = '';
