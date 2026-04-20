@@ -24,9 +24,9 @@ www.caterinburg.ru
 https://vk.com/caterinburg"""
 
 MAPS = {
-    "mm6": "https://i.ibb.co/0Rckvcvf/6.png",
-    "mm10k2": "https://i.ibb.co/Zz0PP6fY/10-2.png",
-    "ordzhonikidze": "https://i.ibb.co/nMsbqc0X/image.png",
+    "mm6": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9C%D0%9C6.png",
+    "mm10k2": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9C%D0%9C10%D0%BA2.png",
+    "ordzhonikidze": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9E%D1%80%D0%B4%D0%B6%D0%BE%D0%BD%D0%B8%D0%BA%D0%B8%D0%B4%D0%B7%D0%B5.png",
 }
 
 CONTACTS = {
