@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # ========== НАСТРОЙКИ ==========
 YOUR_EMAIL = "s.volkov@caterinburg.ru"
-YOUR_PASSWORD = "Vo2024sE0810"
+YOUR_PASSWORD = os.getenv("MAIL_PASSWORD", "")
 
 SIGNATURE = """--
 С уважением,
