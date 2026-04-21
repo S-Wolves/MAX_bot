@@ -295,8 +295,12 @@ async def handle_request_pass(request):
         logger.error(f"Ошибка: {e}")
         return web.json_response({'error': str(e)}, status=500)
 
+async def handle_health(request):
+    return web.Response(text="OK")
+    
 app = web.Application()
 app.router.add_get('/', handle_index)
+app.router.add_get('/health', handle_health)
 app.router.add_post('/api/request-pass', handle_request_pass)
 
 if __name__ == "__main__":
