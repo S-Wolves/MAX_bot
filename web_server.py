@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # ========== КОНФИГУРАЦИЯ ==========
 MAIL_LOGIN = "s.volkov@caterinburg.ru"
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "Vo2024sE0810")
-MAIL_TO = "s.volkov@caterinburg.ru"
+MAIL_TO = "bp@pfur.ru"
 
 SIGNATURE = """--
 С уважением,
@@ -30,9 +30,9 @@ MAPS = {
 }
 
 CONTACTS = {
-    "mm6": "👥 Контакты склада (Миклухо-Маклая, д.6):\n• Кладовщик Наталья: +79256050358\n• Грузчик Сергей: +79269552848",
-    "mm10k2": "👥 Контакты склада (Миклухо-Маклая, д.10к2):\n• Администратор Илаха: +79778320200\n• Зав. производства Анна: +79663171768",
-    "ordzhonikidze": "👥 Контакты склада (Орджоникидзе, д.3):\n• Администратор Екатерина: +79171253314",
+    "mm6": "👥 Контакты склада (Миклухо-Маклая, д.6):<br>• Кладовщик Наталья: <a href=\"tel:+79256050358\">+79256050358</a><br>• Грузчик Сергей: <a href=\"tel:+79269552848\">+79269552848</a>",
+    "mm10k2": "👥 Контакты склада (Миклухо-Маклая, д.10к2):<br>• Администратор Илаха: <a href=\"tel:+79778320200\">+79778320200</a><br>• Зав. производства Анна: <a href=\"tel:+79663171768\">+79663171768</a>",
+    "ordzhonikidze": "👥 Контакты склада (Орджоникидзе, д.3):<br>• Администратор Екатерина: <a href=\"tel:+79171253314\">+79171253314</a>",
 }
 
 def send_email(car_number: str, point_key: str):
@@ -59,7 +59,7 @@ def send_email(car_number: str, point_key: str):
     msg.send()
     logger.info(f"Письмо отправлено для {car_number}")
 
-# ========== HTML (полная версия) ==========
+# ========== HTML ==========
 HTML_PAGE = """<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -137,10 +137,15 @@ HTML_PAGE = """<!DOCTYPE html>
             max-width: 100%;
             border-radius: 8px;
             margin-bottom: 12px;
+            cursor: pointer;
         }
         .contacts {
             font-size: 14px;
             line-height: 1.5;
+        }
+        .contacts a {
+            color: #007aff;
+            text-decoration: none;
         }
         hr { margin: 20px 0; border: none; border-top: 1px solid #ddd; }
         .footer { font-size: 12px; color: #999; text-align: center; margin-top: 24px; }
@@ -148,18 +153,18 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="container">
-    <h1>🚚 Кейтеринбург</h1>
+    <h1>🚚 РУДН</h1>
     <div class="subtitle">Оформление пропуска для въезда</div>
     <div class="points">
         <button class="point-btn" data-point="mm6" data-name="Миклухо-Маклая, д.6">
-            <div class="point-address">📍 Миклухо-Маклая, д.6</div>
+            <div class="point-address">🏢 Миклухо-Маклая, д.6</div>
             <div class="point-note">Въезд в подземную парковку</div>
         </button>
         <button class="point-btn" data-point="mm10k2" data-name="Миклухо-Маклая, д.10к2">
-            <div class="point-address">📍 Миклухо-Маклая, д.10к2</div>
+            <div class="point-address">🏢 Миклухо-Маклая, д.10к2</div>
         </button>
         <button class="point-btn" data-point="ordzhonikidze" data-name="Орджоникидзе, д.3">
-            <div class="point-address">📍 Орджоникидзе, д.3</div>
+            <div class="point-address">🏢 Орджоникидзе, д.3</div>
         </button>
     </div>
     <div class="input-group">
@@ -169,7 +174,7 @@ HTML_PAGE = """<!DOCTYPE html>
     <button class="submit" id="submitBtn">Оформить пропуск</button>
     <div id="status" class="status" style="display: none;"></div>
     <div id="result" class="result" style="display: none;">
-        <div id="resultMap"></div>
+        <div id="resultMap" style="cursor: pointer;" onclick="openImageFullscreen(this.querySelector('img')?.src)"></div>
         <div id="resultContacts" class="contacts"></div>
     </div>
     <hr>
@@ -184,6 +189,16 @@ HTML_PAGE = """<!DOCTYPE html>
     const resultMapDiv = document.getElementById('resultMap');
     const resultContactsDiv = document.getElementById('resultContacts');
     let selectedPoint = null;
+
+    function openImageFullscreen(src) {
+        if (src) {
+            const a = document.createElement('a');
+            a.href = src;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.click();
+        }
+    }
 
     plateInput.addEventListener('input', function(e) { this.value = this.value.toUpperCase(); });
     pointBtns.forEach(btn => {
@@ -215,10 +230,10 @@ HTML_PAGE = """<!DOCTYPE html>
             if (response.ok) {
                 showStatus('✅ Заявка отправлена! Пропуск на 24 часа.', 'success');
                 if (result.map_url) {
-                    resultMapDiv.innerHTML = `<img src="${result.map_url}" alt="Схема проезда">`;
+                    resultMapDiv.innerHTML = `<img src="${result.map_url}" alt="Схема проезда" onclick="openImageFullscreen('${result.map_url}')">`;
                 }
                 if (result.contacts) {
-                    resultContactsDiv.innerHTML = result.contacts.replace(/\\n/g, '<br>');
+                    resultContactsDiv.innerHTML = result.contacts;
                 }
                 resultDiv.style.display = 'block';
                 pointBtns.forEach(b => b.classList.remove('selected'));
