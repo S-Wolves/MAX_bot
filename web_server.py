@@ -20,9 +20,6 @@ SIGNATURE = """--
 т. сот.: +7 (961) 388-84-82
 эл.почта: s.volkov@caterinburg.ru
 
-www.caterinburg.ru
-https://vk.com/caterinburg"""
-
 MAPS = {
     "mm6": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9C%D0%9C6.png",
     "mm10k2": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9C%D0%9C10%D0%BA2.png",
@@ -49,15 +46,28 @@ def send_email(car_number: str, point_key: str):
         config = Configuration(server='owa.ekdekb.ru', credentials=credentials)
         account = Account(primary_smtp_address=MAIL_LOGIN, config=config, autodiscover=False, access_type='delegate')
     
-    body = f"Прошу пропустить машину для разгрузки на {address}.\n{car_number}\nЗаранее спасибо.\n\n{SIGNATURE}"
+    # Формируем HTML-тело письма
+    html_body = f"""
+    <html>
+    <body>
+        <p>Прошу пропустить машину для разгрузки на {address}.</p>
+        <p style="font-size: 12pt; font-weight: bold;">{car_number}</p>
+        <p>Заранее спасибо.</p>
+        <br>
+        <p>{SIGNATURE.replace(chr(10), '<br>')}</p>
+    </body>
+    </html>
+    """
+    
     msg = Message(
         account=account,
         subject=f'Заявка на пропуск {car_number}',
-        body=body,
+        body=html_body,
+        body_format='HTML',  # указываем, что это HTML
         to_recipients=[Mailbox(email_address=MAIL_TO)]
     )
     msg.send()
-    logger.info(f"Письмо отправлено для {car_number}")
+    logger.info(f"Письмо отправлено для {car_number} на {MAIL_TO}")
 
 # ========== HTML ==========
 HTML_PAGE = """<!DOCTYPE html>
