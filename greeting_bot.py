@@ -1,19 +1,21 @@
 import asyncio
 import logging
+import os
+from aiohttp import web
 from maxapi import Bot, Dispatcher, F
 from maxapi.types import BotStarted, MessageCreated
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Токен вашего тестового бота
-import os
-MAX_BOT_TOKEN = os.getenv("BOT_TOKEN", "токен_по_умолчанию")
+# Токен основного бота из переменной окружения
+MAX_BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not MAX_BOT_TOKEN:
+    logger.error("BOT_TOKEN не задан в переменных окружения")
+    exit(1)
 
 bot = Bot(token=MAX_BOT_TOKEN)
 dp = Dispatcher()
-
-# Хранилище для отслеживания, кому уже отправили приветствие
 greeted_users = set()
 
 def get_user_id_from_event(event):
@@ -30,6 +32,7 @@ def get_user_id_from_event(event):
         logger.error(f"Ошибка user_id: {e}")
         return None
 
+# --- Обработчики команд бота ---
 @dp.bot_started()
 async def bot_started(event: BotStarted):
     user_id = event.chat_id
@@ -51,7 +54,6 @@ async def handle_message(event: MessageCreated):
     text = event.message.body.text.strip()
     logger.info(f"Получен текст: '{text}'")
     
-    # Если пользователь написал /start, отправляем полное приветствие
     if text == '/start':
         greeted_users.add(user_id)
         await event.message.answer(
@@ -62,13 +64,11 @@ async def handle_message(event: MessageCreated):
         )
         return
     
-    # Если пользователь уже получал приветствие, отвечаем коротко
     if user_id in greeted_users:
         await event.message.answer(
             "👇 **Нажмите на кнопку слева от строки ввода**, чтобы открыть форму заказа пропуска."
         )
     else:
-        # Первое сообщение от пользователя (не /start) — отправляем полное приветствие
         greeted_users.add(user_id)
         await event.message.answer(
             "🚚 **Кейтеринбург**\n\n"
@@ -77,9 +77,28 @@ async def handle_message(event: MessageCreated):
             "После заполнения вы получите схему проезда и контакты склада."
         )
 
+# --- Минимальный веб-сервер для Render ---
+async def health_check(request):
+    return web.Response(text="OK")
+
+async def run_web():
+    app = web.Application()
+    app.router.add_get('/health', health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    logger.info(f"Health-check сервер запущен на порту {port}")
+    while True:
+        await asyncio.sleep(3600)
+
 async def main():
     logger.info("Запуск greeting бота...")
     await bot.delete_webhook()
+    # Запускаем веб-сервер в фоне
+    asyncio.create_task(run_web())
+    # Запускаем бота
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
