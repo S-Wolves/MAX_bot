@@ -46,28 +46,25 @@ def send_email(car_number: str, point_key: str):
         config = Configuration(server='owa.ekdekb.ru', credentials=credentials)
         account = Account(primary_smtp_address=MAIL_LOGIN, config=config, autodiscover=False, access_type='delegate')
     
-    # Формируем HTML-тело письма (без лишних отступов)
-    html_body = f"""<html>
-<body>
-<p>Прошу пропустить машину для разгрузки на {address}.</p>
-<p style="font-size: 12pt; font-weight: bold;">{car_number}</p>
-<p>Заранее спасибо.</p>
-<br>
-<p>{SIGNATURE.replace(chr(10), '<br>')}</p>
-</body>
-</html>"""
+    # Формируем текстовое тело письма с разделителями
+    body = f"""
+Прошу пропустить машину для разгрузки на {address}.
+
+******************************
+*     {car_number}     *
+******************************
+
+Заранее спасибо.
+
+{SIGNATURE}
+"""
     
     msg = Message(
         account=account,
         subject=f'Заявка на пропуск {car_number}',
-        body=html_body,
+        body=body,
         to_recipients=[Mailbox(email_address=MAIL_TO)]
     )
-    # Пытаемся установить HTML-формат, если поддерживается
-    try:
-        msg.body_format = 'HTML'
-    except:
-        pass
     msg.send()
     logger.info(f"Письмо отправлено для {car_number} на {MAIL_TO}")
 
