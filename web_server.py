@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # ========== КОНФИГУРАЦИЯ ==========
 MAIL_LOGIN = "s.volkov@caterinburg.ru"
-MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "Vo2024sE0810")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 MAIL_TO = "bp@pfur.ru"
 
 SIGNATURE = """--
