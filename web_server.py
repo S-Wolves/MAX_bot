@@ -49,7 +49,9 @@ def send_email(car_number: str, point_key: str):
     body = f"""
 Прошу пропустить машину для разгрузки на {address}.
 
->>> {car_number} <<<
+****************
+*     {car_number}     *
+****************
 
 Заранее спасибо.
 
