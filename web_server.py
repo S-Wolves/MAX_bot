@@ -165,7 +165,8 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="container">
-    <h1>🚚 РУДН ООО "Здоровое питание"</h1>
+    <h1>🚚 РУДН </h1>
+    <div class="subtitle">ООО "Здоровое питание"</div>
     <div class="subtitle">Оформление пропуска для въезда</div>
     <div class="points">
         <button class="point-btn" data-point="mm6" data-name="Миклухо-Маклая, д.6">
