@@ -7,7 +7,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Токен вашего тестового бота
-MAX_BOT_TOKEN = "f9LHodD0cOJeDbayAKet9P27hzH1FOpvNnkdepcjJaDCoeTR6JLPSW7b7YpbT4DAf8E-rvP7gIajLSMQw_vz"
+import os
+MAX_BOT_TOKEN = os.getenv("BOT_TOKEN", "токен_по_умолчанию")
 
 bot = Bot(token=MAX_BOT_TOKEN)
 dp = Dispatcher()
