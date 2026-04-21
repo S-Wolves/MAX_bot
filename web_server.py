@@ -46,19 +46,15 @@ def send_email(car_number: str, point_key: str):
         config = Configuration(server='owa.ekdekb.ru', credentials=credentials)
         account = Account(primary_smtp_address=MAIL_LOGIN, config=config, autodiscover=False, access_type='delegate')
     
-    # Формируем текстовое тело письма с разделителями
     body = f"""
 Прошу пропустить машину для разгрузки на {address}.
 
-****************
-*     {car_number}     *
-****************
+>>> {car_number} <<<
 
 Заранее спасибо.
 
 {SIGNATURE}
 """
-    
     msg = Message(
         account=account,
         subject=f'Заявка на пропуск {car_number}',
