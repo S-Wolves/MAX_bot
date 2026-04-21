@@ -18,10 +18,7 @@ SIGNATURE = """--
 Управляющий
 117198, г. Москва, ул. Миклухо-Маклая, 6, РУДН
 т. сот.: +7 (961) 388-84-82
-эл.почта: s.volkov@caterinburg.ru
-
-www.caterinburg.ru
-https://vk.com/caterinburg"""
+эл.почта: s.volkov@caterinburg.ru"""
 
 MAPS = {
     "mm6": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9C%D0%9C6.png",
