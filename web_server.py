@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # ========== КОНФИГУРАЦИЯ ==========
 MAIL_LOGIN = "s.volkov@caterinburg.ru"
 MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "Vo2024sE0810")
-MAIL_TO = "s.volkov@caterinburg.ru"
+MAIL_TO = "bp@pfur.ru"
 
 SIGNATURE = """--
 С уважением,
@@ -19,6 +19,9 @@ SIGNATURE = """--
 117198, г. Москва, ул. Миклухо-Маклая, 6, РУДН
 т. сот.: +7 (961) 388-84-82
 эл.почта: s.volkov@caterinburg.ru
+
+www.caterinburg.ru
+https://vk.com/caterinburg"""
 
 MAPS = {
     "mm6": "https://raw.githubusercontent.com/S-Wolves/MAX_bot/main/%D0%9C%D0%9C6.png",
@@ -46,30 +49,32 @@ def send_email(car_number: str, point_key: str):
         config = Configuration(server='owa.ekdekb.ru', credentials=credentials)
         account = Account(primary_smtp_address=MAIL_LOGIN, config=config, autodiscover=False, access_type='delegate')
     
-    # Формируем HTML-тело письма
-    html_body = f"""
-    <html>
-    <body>
-        <p>Прошу пропустить машину для разгрузки на {address}.</p>
-        <p style="font-size: 12pt; font-weight: bold;">{car_number}</p>
-        <p>Заранее спасибо.</p>
-        <br>
-        <p>{SIGNATURE.replace(chr(10), '<br>')}</p>
-    </body>
-    </html>
-    """
+    # Формируем HTML-тело письма (без лишних отступов)
+    html_body = f"""<html>
+<body>
+<p>Прошу пропустить машину для разгрузки на {address}.</p>
+<p style="font-size: 12pt; font-weight: bold;">{car_number}</p>
+<p>Заранее спасибо.</p>
+<br>
+<p>{SIGNATURE.replace(chr(10), '<br>')}</p>
+</body>
+</html>"""
     
     msg = Message(
         account=account,
         subject=f'Заявка на пропуск {car_number}',
         body=html_body,
-        body_format='HTML',  # указываем, что это HTML
         to_recipients=[Mailbox(email_address=MAIL_TO)]
     )
+    # Пытаемся установить HTML-формат, если поддерживается
+    try:
+        msg.body_format = 'HTML'
+    except:
+        pass
     msg.send()
     logger.info(f"Письмо отправлено для {car_number} на {MAIL_TO}")
 
-# ========== HTML ==========
+# ========== HTML-страница мини-приложения ==========
 HTML_PAGE = """<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -163,7 +168,7 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="container">
-    <h1>🚚 РУДН</h1>
+    <h1>🚚 РУДН ООО "Здоровое питание"</h1>
     <div class="subtitle">Оформление пропуска для въезда</div>
     <div class="points">
         <button class="point-btn" data-point="mm6" data-name="Миклухо-Маклая, д.6">
