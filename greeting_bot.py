@@ -83,7 +83,12 @@ async def health_check(request):
 
 async def run_web():
     app = web.Application()
-    app.router.add_get('/health', health_check)
+    # Добавляем обработчик для корневого пути
+    async def handle_root(request):
+        return web.Response(text="OK")
+    app.router.add_get('/', handle_root)
+    app.router.add_get('/health', lambda req: web.Response(text="OK"))
+    
     runner = web.AppRunner(app)
     await runner.setup()
     port = int(os.environ.get("PORT", 8080))
