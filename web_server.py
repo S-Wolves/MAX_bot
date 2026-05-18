@@ -186,7 +186,7 @@ HTML_PAGE = """<!DOCTYPE html>
         <div id="resultContacts" class="contacts"></div>
     </div>
     <hr>
-    <div class="footer">Пропуск действует 24 часа</div>
+    <div class="footer">Пропуск действует с 7:00 до 16:00 текущего дня</div>
 </div>
 <script>
     const pointBtns = document.querySelectorAll('.point-btn');
