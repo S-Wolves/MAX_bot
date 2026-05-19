@@ -236,7 +236,7 @@ HTML_PAGE = """<!DOCTYPE html>
             });
             const result = await response.json();
             if (response.ok) {
-                showStatus('✅ Заявка отправлена! Пропуск на 24 часа.', 'success');
+                showStatus('✅ Заявка отправлена!', 'success');
                 if (result.map_url) {
                     resultMapDiv.innerHTML = `<img src="${result.map_url}" alt="Схема проезда" onclick="openImageFullscreen('${result.map_url}')">`;
                 }
