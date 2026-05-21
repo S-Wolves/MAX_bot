@@ -304,6 +304,6 @@ app.router.add_get('/health', handle_health)
 app.router.add_post('/api/request-pass', handle_request_pass)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 3000))
     logger.info(f"Запуск на порту {port}")
     web.run_app(app, host='0.0.0.0', port=port)
